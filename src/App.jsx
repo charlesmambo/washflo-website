@@ -218,7 +218,7 @@ function Footer({ className = "" }) {
         <div className="footer-links">
           <h4>Get in Touch</h4>
           <a href="mailto:hello@washflo.co.za">charles@washflo.co.za</a>
-          <a href="https://wa.me/27000000000">WhatsApp</a>
+          <a href="https://wa.me/27695940761">WhatsApp</a>
         </div>
         <div className="footer-bottom">
           <span>© 2025 Washflo. All rights reserved.</span>
@@ -448,7 +448,7 @@ function App() {
                   <b>charles@washflo.co.za</b>
                 </div>
               </a>
-              <a href="https://wa.me/27000000000">
+              <a href="https://wa.me/27695940761">
                 <span>↗</span>
                 <div>
                   <small>Message us</small>
