@@ -213,11 +213,11 @@ function Footer({ className = "" }) {
           <a href="/#owners">For Car Wash Owners</a>
           <a href="/#drivers">For Drivers</a>
           <a href="/#faqs">FAQs</a>
-          <a href="/contact">Contact</a>
+          <a href="/#contact-page">Contact</a>
         </div>
         <div className="footer-links">
           <h4>Get in Touch</h4>
-          <a href="mailto:hello@washflo.co.za">charles@washflo.co.za</a>
+          <a href="mailto:charles@washflo.co.za">charles@washflo.co.za</a>
           <a href="https://wa.me/27695940761">WhatsApp</a>
         </div>
         <div className="footer-bottom">
@@ -407,7 +407,7 @@ function App() {
   const [openFaq, setOpenFaq] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  if (window.location.pathname === "/contact") {
+  if ((window.location.pathname === "/contact" || window.location.hash === "#contact-page")) {
     return (
       <div className="contact-page">
         <header className="site-header">
@@ -420,11 +420,11 @@ function App() {
               <a href="/#owners">For Owners</a>
               <a href="/#drivers">For Drivers</a>
               <a href="/#faqs">FAQs</a>
-              <a href="/contact" aria-current="page">
+              <a href="/#contact-page" aria-current="page">
                 Contact
               </a>
             </nav>
-            <a className="button button-primary header-cta" href="/contact">
+            <a className="button button-primary header-cta" href="/#contact-page">
               Book a Demo <span>↗</span>
             </a>
           </div>
@@ -441,7 +441,7 @@ function App() {
               Washflo team will be in touch soon.
             </p>
             <div className="contact-details">
-              <a href="mailto:hello@washflo.co.za">
+              <a href="mailto:charles@washflo.co.za">
                 <span>✉</span>
                 <div>
                   <small>Email us</small>
@@ -528,9 +528,9 @@ function App() {
             <a href="#owners">For Owners</a>
             <a href="#drivers">For Drivers</a>
             <a href="#faqs">FAQs</a>
-            <a href="/contact">Contact</a>
+            <a href="/#contact-page">Contact</a>
           </nav>
-          <a className="button button-primary header-cta" href="/contact">
+          <a className="button button-primary header-cta" href="/#contact-page">
             Book a Demo <span>↗</span>
           </a>
         </div>
@@ -847,7 +847,7 @@ function App() {
                 Have a question about subscriptions, payments or daily
                 operations? Start here.
               </p>
-              <a className="button button-primary" href="/contact">
+              <a className="button button-primary" href="/#contact-page">
                 Book a Demo <span>↗</span>
               </a>
             </div>
@@ -892,10 +892,10 @@ function App() {
                 way to operate.
               </p>
               <div className="contact-actions">
-                <a className="button button-white" href="/contact">
+                <a className="button button-white" href="/#contact-page">
                   Book a Demo <span>↗</span>
                 </a>
-                <a className="button button-translucent" href="/contact">
+                <a className="button button-translucent" href="/#contact-page">
                   Contact Us <span>↗</span>
                 </a>
               </div>
