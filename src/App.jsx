@@ -221,7 +221,7 @@ function Footer({ className = "", onContactClick }) {
           <a href="https://wa.me/27695940761">WhatsApp</a>
         </div>
         <div className="footer-bottom">
-          <span>© 2025 Washflo. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Washflo. All rights reserved.</span>
           <span>Subscriptions. Bookings. Better Business.</span>
         </div>
       </div>
