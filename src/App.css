@@ -55,7 +55,7 @@
 
 .nav-wrap nav a {
     text-decoration: none;
-    font-size: 12px;
+    font-size: 16px;
     color: #53677d;
     font-weight: 600;
     transition: color .18s
@@ -139,7 +139,7 @@
 
 .eyebrow {
     color: #627891;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 1.65px;
     text-transform: uppercase;
@@ -735,7 +735,7 @@
 
 .intro {
     padding-top: 112px;
-    padding-bottom: 108px;
+    padding-bottom: 64px;
     display: grid;
     grid-template-columns: .88fr 1.12fr;
     align-items: center;
@@ -808,7 +808,7 @@
 }
 
 .steps-section {
-    padding: 105px 0 112px;
+    padding: 64px 0 112px;
     background: #fff
 }
 
@@ -2605,7 +2605,7 @@
 }
 .dash-side .brand img { width: 60px; max-height: 30px; }
 
-.nav-wrap > .brand img, .footer-about > .brand img { width: 120px; max-height: 60px; }
+.nav-wrap > .brand img, .footer-about > .brand img { width: 130px; max-height: 65px; }
 
 .benefit-list article > small { font-size: 11px; font-weight: 800; }
 
@@ -2668,4 +2668,149 @@
   }
   .drivers-layout { grid-template-columns: minmax(0, 1fr); }
   .driver-list article > div { min-width: 0; }
+}
+@media (max-width: 680px) {
+  .menu-toggle {
+    z-index: 31;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #d5eee7;
+    border-radius: 12px;
+    background: #eaf8f3;
+    color: #0b2547;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .nav-wrap nav,
+  .contact-page .contact-nav {
+    display: none;
+    z-index: 30;
+    border: 1px solid #d5eee7;
+    border-top: 3px solid var(--teal);
+    border-radius: 0 0 16px 16px;
+    background: #effaf6;
+    box-shadow: 0 18px 36px #0b254733;
+  }
+  .nav-wrap nav.nav-open,
+  .contact-page .contact-nav.nav-open {
+    display: flex;
+  }
+  .nav-wrap nav a,
+  .contact-page .contact-nav a {
+    color: #173c55;
+  }
+  .nav-wrap nav a:hover,
+  .contact-page .contact-nav a:hover {
+    color: #078f87;
+  }
+}
+@media (max-width: 680px) {
+  .button {
+    width: 100%;
+  }
+  .hero-actions,
+  .contact-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-actions .button,
+  .contact-actions .button {
+    width: 100%;
+  }
+}
+.step-card p,
+.feature-card p,
+.benefit-list p,
+.driver-list p,
+.faq-item > p {
+  font-size: 0.85rem
+}
+.footer-links a,
+.footer-links h4 {
+  font-size: 0.9rem;
+}
+
+.footer-links a { font-weight: 400; }
+
+.footer-about h3 { font-size: 20px; }
+.footer-about p { font-size: 0.9rem; }
+
+.hero-copy > p,
+.intro-copy > p,
+.benefits-heading > p,
+.revenue-copy > p,
+.section-heading > p,
+.faq-intro > p,
+.step-card p,
+.feature-card p,
+.benefit-list p,
+.driver-list p,
+.faq-item > p,
+.contact-copy > p,
+.contact-page-copy > p,
+.footer-about p {
+  font-size: 16px;
+}
+
+@media (max-width: 680px) { .intro { padding-bottom: 48px; } .steps-section { padding-top: 52px; } }
+
+.revenue-label { font-size: 10px; }
+.price { font-size: 60px; }
+.price i { font-size: 12px; }
+.package-desc { font-size: 11px; }
+.metric { font-size: 11px; }
+.sales-total span { font-size: 11px; }
+.sales-total b { font-size: 28px; }
+.trend-line { font-size: 9px; }
+.highlight-note,
+.disclaimer,
+.contact-copy > small,
+.contact-details small {
+  font-size: 0.9rem;
+}
+.card-top > small,
+.feature-card-top > small {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+.benefit-list article > small { font-size: 0.9rem; font-weight: 800; color: var(--teal); }
+
+.step-card p,
+.feature-card p,
+.benefit-list p,
+.driver-list p,
+.faq-item > p {
+  font-size: 0.85rem
+}
+@media (max-width: 680px) {
+  .hero-copy > p,
+  .intro-copy > p,
+  .benefits-heading > p,
+  .revenue-copy > p,
+  .section-heading > p,
+  .faq-intro > p,
+  .contact-copy > p,
+  .contact-page-copy > p,
+  .footer-about p {
+    font-size: 1rem;
+  }
+}
+.footer-bottom {
+  justify-content: flex-start;
+  gap: 12px 32px;
+}
+
+@media (max-width: 680px) {
+  .footer-bottom {
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+    gap: 8px 18px;
+  }
+  .footer-bottom span:last-child {
+    text-align: left;
+  }
 }

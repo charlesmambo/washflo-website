@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import washfloLogo from "./assets/washflo_logo.png";
 import "./App.css";
 
@@ -192,7 +192,7 @@ function Brand({ light = false }) {
   );
 }
 
-function Footer({ className = "" }) {
+function Footer({ className = "", onContactClick }) {
   return (
     <footer className={`site-footer ${className}`.trim()}>
       <div className="footer-inner">
@@ -213,7 +213,7 @@ function Footer({ className = "" }) {
           <a href="/#owners">For Car Wash Owners</a>
           <a href="/#drivers">For Drivers</a>
           <a href="/#faqs">FAQs</a>
-          <a href="/#contact-page">Contact</a>
+          <a href="/#contact-page" onClick={onContactClick}>Contact</a>
         </div>
         <div className="footer-links">
           <h4>Get in Touch</h4>
@@ -406,25 +406,57 @@ function SectionHeading({ eyebrow, title, copy, left = false }) {
 function App() {
   const [openFaq, setOpenFaq] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isContactPage, setIsContactPage] = useState(
+    () => window.location.pathname === "/contact" || window.location.hash === "#contact-page",
+  );
 
-  if ((window.location.pathname === "/contact" || window.location.hash === "#contact-page")) {
+  useEffect(() => {
+    const syncRoute = () => {
+      setIsContactPage(
+        window.location.pathname === "/contact" || window.location.hash === "#contact-page",
+      );
+      setMenuOpen(false);
+    };
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  const openContactPage = (event) => {
+    event.preventDefault();
+    setMenuOpen(false);
+    if (!isContactPage) {
+      window.history.pushState({}, "", "/#contact-page");
+      setIsContactPage(true);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  if (isContactPage) {
     return (
       <div className="contact-page">
         <header className="site-header">
           <div className="nav-wrap">
             <Brand />
-            <nav className="contact-nav">
-              <a href="/#home">Home</a>
-              <a href="/#how-it-works">How It Works</a>
-              <a href="/#features">Features</a>
-              <a href="/#owners">For Owners</a>
-              <a href="/#drivers">For Drivers</a>
-              <a href="/#faqs">FAQs</a>
-              <a href="/#contact-page" aria-current="page">
+            <button
+              className="menu-toggle"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? "\u00D7" : "\u2630"}
+            </button>
+            <nav className={`contact-nav ${menuOpen ? "nav-open" : ""}`}>
+              <a href="/#home" onClick={() => setMenuOpen(false)}>Home</a>
+              <a href="/#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
+              <a href="/#features" onClick={() => setMenuOpen(false)}>Features</a>
+              <a href="/#owners" onClick={() => setMenuOpen(false)}>For Owners</a>
+              <a href="/#drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
+              <a href="/#faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
+              <a href="/#contact-page" onClick={openContactPage} aria-current="page">
                 Contact
               </a>
             </nav>
-            <a className="button button-primary header-cta" href="/#contact-page">
+            <a className="button button-primary header-cta" href="/#contact-page" onClick={openContactPage}>
               Book a Demo <span>↗</span>
             </a>
           </div>
@@ -504,7 +536,7 @@ function App() {
             </button>
           </form>
         </main>
-        <Footer className="contact-page-footer" />
+        <Footer className="contact-page-footer" onContactClick={openContactPage} />
       </div>
     );
   }
@@ -516,21 +548,22 @@ function App() {
           <Brand />
           <button
             className="menu-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle navigation"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={menuOpen}
           >
-            ☰
+            {menuOpen ? "\u00D7" : "\u2630"}
           </button>
           <nav className={menuOpen ? "nav-open" : ""}>
-            <a href="#home">Home</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#features">Features</a>
-            <a href="#owners">For Owners</a>
-            <a href="#drivers">For Drivers</a>
-            <a href="#faqs">FAQs</a>
-            <a href="/#contact-page">Contact</a>
+            <a href="#home" onClick={() => setMenuOpen(false)}>Home</a>
+            <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
+            <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
+            <a href="#owners" onClick={() => setMenuOpen(false)}>For Owners</a>
+            <a href="#drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
+            <a href="#faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
+            <a href="/#contact-page" onClick={openContactPage}>Contact</a>
           </nav>
-          <a className="button button-primary header-cta" href="/#contact-page">
+          <a className="button button-primary header-cta" href="/#contact-page" onClick={openContactPage}>
             Book a Demo <span>↗</span>
           </a>
         </div>
@@ -847,9 +880,7 @@ function App() {
                 Have a question about subscriptions, payments or daily
                 operations? Start here.
               </p>
-              <a className="button button-primary" href="/#contact-page">
-                Book a Demo <span>↗</span>
-              </a>
+              
             </div>
             <div className="faq-list">
               {faqs.map(([q, a], i) => (
@@ -892,10 +923,10 @@ function App() {
                 way to operate.
               </p>
               <div className="contact-actions">
-                <a className="button button-white" href="/#contact-page">
+                <a className="button button-white" href="/#contact-page" onClick={openContactPage}>
                   Book a Demo <span>↗</span>
                 </a>
-                <a className="button button-translucent" href="/#contact-page">
+                <a className="button button-translucent" href="/#contact-page" onClick={openContactPage}>
                   Contact Us <span>↗</span>
                 </a>
               </div>
@@ -912,7 +943,7 @@ function App() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer onContactClick={openContactPage} />
     </>
   );
 }
