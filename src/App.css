@@ -2814,3 +2814,5 @@
     text-align: left;
   }
 }
+.footer-bottom { justify-content: center; text-align: center; }
+.footer-bottom span:last-child { text-align: center; }

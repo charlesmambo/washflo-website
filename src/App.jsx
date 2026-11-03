@@ -491,7 +491,7 @@ function App() {
           </div>
           <form
             className="contact-form"
-            action="mailto:hello@washflo.co.za"
+            action="mailto:charles@washflo.co.za"
             method="post"
             encType="text/plain"
           >
@@ -532,7 +532,7 @@ function App() {
               />
             </label>
             <button className="button button-primary" type="submit">
-              Send message <span>↗</span>
+              Send message
             </button>
           </form>
         </main>
