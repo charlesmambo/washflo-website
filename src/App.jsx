@@ -180,11 +180,21 @@ const faqs = [
   ],
 ];
 
+const pageSectionByPath = {
+  "/": "home",
+  "/how-it-works": "how-it-works",
+  "/features": "features",
+  "/for-car-wash-owners": "owners",
+  "/for-drivers": "drivers",
+  "/faqs": "faqs",
+  "/get-in-touch": "contact",
+};
+
 function Brand({ light = false }) {
   return (
     <a
       className={`brand ${light ? "brand-light" : ""}`}
-      href="/#home"
+      href="/"
       aria-label="Washflo home"
     >
       <img src={washfloLogo} alt="Washflo" />
@@ -207,13 +217,13 @@ function Footer({ className = "", onContactClick }) {
         </div>
         <div className="footer-links">
           <h4>Quick Links</h4>
-          <a href="/#home">Home</a>
-          <a href="/#how-it-works">How It Works</a>
-          <a href="/#features">Features</a>
-          <a href="/#owners">For Car Wash Owners</a>
-          <a href="/#drivers">For Drivers</a>
-          <a href="/#faqs">FAQs</a>
-          <a href="/#contact-page" onClick={onContactClick}>Contact</a>
+          <a href="/">Home</a>
+          <a href="/how-it-works">How It Works</a>
+          <a href="/features">Features</a>
+          <a href="/for-car-wash-owners">For Car Wash Owners</a>
+          <a href="/for-drivers">For Drivers</a>
+          <a href="/faqs">FAQs</a>
+          <a href="/contact-page" onClick={onContactClick}>Contact</a>
         </div>
         <div className="footer-links">
           <h4>Get in Touch</h4>
@@ -406,18 +416,34 @@ function SectionHeading({ eyebrow, title, copy, left = false }) {
 function App() {
   const [openFaq, setOpenFaq] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactErrors, setContactErrors] = useState({});
+  const [contactStatus, setContactStatus] = useState(null);
   const [isContactPage, setIsContactPage] = useState(
-    () => window.location.pathname === "/contact" || window.location.hash === "#contact-page",
+    () => ["/contact-page", "/contact"].includes(window.location.pathname) || window.location.hash === "#contact-page",
   );
 
   useEffect(() => {
+    const scrollToRoute = () => {
+      const sectionId = window.location.pathname === "/" && window.location.hash
+        ? window.location.hash.slice(1)
+        : pageSectionByPath[window.location.pathname];
+      if (!sectionId) return;
+      window.requestAnimationFrame(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      });
+    };
+
     const syncRoute = () => {
       setIsContactPage(
-        window.location.pathname === "/contact" || window.location.hash === "#contact-page",
+        ["/contact-page", "/contact"].includes(window.location.pathname) || window.location.hash === "#contact-page",
       );
       setMenuOpen(false);
+      scrollToRoute();
     };
+
     window.addEventListener("popstate", syncRoute);
+    if (!["/contact-page", "/contact"].includes(window.location.pathname)) scrollToRoute();
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
 
@@ -425,9 +451,116 @@ function App() {
     event.preventDefault();
     setMenuOpen(false);
     if (!isContactPage) {
-      window.history.pushState({}, "", "/#contact-page");
+      window.history.pushState({}, "", "/contact-page");
       setIsContactPage(true);
       window.scrollTo(0, 0);
+    }
+  };
+
+  const clearContactError = (field) => {
+    setContactErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setContactStatus(null);
+  };
+
+  const handleContactSubmit = async (event) => {
+    event.preventDefault();
+    if (contactSubmitting) return;
+
+    const form = event.currentTarget;
+    const submission = Object.fromEntries(new FormData(form).entries());
+    submission.name = String(submission.name || "").trim();
+    submission.email = String(submission.email || "").trim();
+    submission.business = String(submission.business || "").trim();
+    submission.message = String(submission.message || "").trim();
+
+    const errors = {};
+    if (submission.name.length < 2) errors.name = "Enter your name using at least 2 characters.";
+    if (submission.name.length > 100) errors.name = "Your name must be 100 characters or fewer.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(submission.email) || submission.email.length > 254) {
+      errors.email = "Enter a valid email address so we can reply to you.";
+    }
+    if (submission.business.length > 120) errors.business = "The business name must be 120 characters or fewer.";
+    if (submission.message.length < 10) errors.message = "Please add a little more detail (at least 10 characters).";
+    if (submission.message.length > 3000) errors.message = "Your message must be 3,000 characters or fewer.";
+
+    setContactErrors(errors);
+    if (Object.keys(errors).length) {
+      setContactStatus({ type: "error", message: "Please check the fields marked below and try again." });
+      form.elements[Object.keys(errors)[0]]?.focus();
+      return;
+    }
+
+    setContactSubmitting(true);
+    setContactStatus(null);
+
+    try {
+      const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+      let response;
+      try {
+        response = await fetch(`${apiBaseUrl}/api/contact`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(submission),
+        });
+      } catch {
+        throw new Error("network");
+      }
+      const result = await response.json().catch(() => ({}));
+      const acceptedByMailService = result.accepted === true
+        || result.message === "Your message was accepted by our mail server.";
+      const succeeded = result.success === true && acceptedByMailService;
+
+      if (!response.ok || !succeeded) {
+        const serverErrors = result.errors && typeof result.errors === "object"
+          ? Object.fromEntries(
+              Object.entries(result.errors).filter(([field, message]) =>
+                ["name", "email", "business", "message"].includes(field) && typeof message === "string",
+              ),
+            )
+          : {};
+        if (Object.keys(serverErrors).length) {
+          setContactErrors(serverErrors);
+          form.elements[Object.keys(serverErrors)[0]]?.focus();
+        }
+
+        const failureMessage = response.status === 429
+          ? "You've sent several messages recently. Please wait 15 minutes and try again."
+          : response.status === 503 || response.status === 502
+            ? "We couldn't send your message right now. Please try again later, or email us at charles@washflo.co.za."
+            : response.status === 413
+              ? "Your message is too long to send. Please shorten it and try again."
+              : response.status === 403
+                ? "We couldn't send your message from this page. Please refresh and try again."
+                : Object.keys(serverErrors).length
+                  ? "Please check the fields marked below and try again."
+                  : "We couldn't send your message. Please check your details and try again.";
+        const submissionError = new Error(failureMessage);
+        submissionError.name = "ContactFormError";
+        throw submissionError;
+      }
+
+      form.reset();
+      setContactErrors({});
+      setContactStatus({
+        type: "success",
+        message: "Thank you for reaching out! Your message has been sent successfully. We'll get back to you as soon as possible.",
+      });
+    } catch (error) {
+      setContactStatus({
+        type: "error",
+        message: error instanceof Error && error.name === "ContactFormError"
+          ? error.message
+          : error instanceof Error && error.message === "network"
+            ? "We couldn't connect to send your message. Check your internet connection and try again."
+            : "We couldn't send your message. Please try again later, or email us at charles@washflo.co.za.",
+      });
+    } finally {
+      setContactSubmitting(false);
     }
   };
 
@@ -446,17 +579,17 @@ function App() {
               {menuOpen ? "\u00D7" : "\u2630"}
             </button>
             <nav className={`contact-nav ${menuOpen ? "nav-open" : ""}`}>
-              <a href="/#home" onClick={() => setMenuOpen(false)}>Home</a>
-              <a href="/#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
-              <a href="/#features" onClick={() => setMenuOpen(false)}>Features</a>
-              <a href="/#owners" onClick={() => setMenuOpen(false)}>For Owners</a>
-              <a href="/#drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
-              <a href="/#faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
-              <a href="/#contact-page" onClick={openContactPage} aria-current="page">
+              <a href="/" onClick={() => setMenuOpen(false)}>Home</a>
+              <a href="/how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
+              <a href="/features" onClick={() => setMenuOpen(false)}>Features</a>
+              <a href="/for-car-wash-owners" onClick={() => setMenuOpen(false)}>For Owners</a>
+              <a href="/for-drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
+              <a href="/faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
+              <a href="/contact-page" onClick={openContactPage} aria-current="page">
                 Contact
               </a>
             </nav>
-            <a className="button button-primary header-cta" href="/#contact-page" onClick={openContactPage}>
+            <a className="button button-primary header-cta" href="/contact-page" onClick={openContactPage}>
               Book a Demo <span>↗</span>
             </a>
           </div>
@@ -473,7 +606,7 @@ function App() {
               Washflo team will be in touch soon.
             </p>
             <div className="contact-details">
-              <a href="mailto:charles@washflo.co.za">
+              <a>
                 <span>✉</span>
                 <div>
                   <small>Email us</small>
@@ -491,49 +624,80 @@ function App() {
           </div>
           <form
             className="contact-form"
-            action="mailto:charles@washflo.co.za"
-            method="post"
-            encType="text/plain"
+            onSubmit={handleContactSubmit}
+            noValidate
           >
+            <input name="website" type="hidden" autoComplete="off" />
             <label>
-              Your name
+              Your name <span aria-hidden="true">*</span>
               <input
                 name="name"
                 autoComplete="name"
                 placeholder="e.g. Alex Smith"
+                minLength={2}
+                maxLength={100}
                 required
+                aria-invalid={Boolean(contactErrors.name)}
+                aria-describedby={contactErrors.name ? "contact-name-error" : undefined}
+                onChange={() => clearContactError("name")}
               />
+              {contactErrors.name && <small id="contact-name-error" className="contact-field-error">{contactErrors.name}</small>}
             </label>
             <label>
-              Work email
+              Work email <span aria-hidden="true">*</span>
               <input
                 name="email"
                 type="email"
                 autoComplete="email"
                 placeholder="you@yourcarwash.co.za"
+                maxLength={254}
                 required
+                aria-invalid={Boolean(contactErrors.email)}
+                aria-describedby={contactErrors.email ? "contact-email-error" : undefined}
+                onChange={() => clearContactError("email")}
               />
+              {contactErrors.email && <small id="contact-email-error" className="contact-field-error">{contactErrors.email}</small>}
             </label>
             <label>
-              Car wash business
+              Car wash business (optional)
               <input
                 name="business"
                 autoComplete="organization"
                 placeholder="Your business name"
+                maxLength={120}
+                aria-invalid={Boolean(contactErrors.business)}
+                aria-describedby={contactErrors.business ? "contact-business-error" : undefined}
+                onChange={() => clearContactError("business")}
               />
+              {contactErrors.business && <small id="contact-business-error" className="contact-field-error">{contactErrors.business}</small>}
             </label>
             <label>
-              How can we help?
+              How can we help? <span aria-hidden="true">*</span>
               <textarea
                 name="message"
                 rows="5"
-                placeholder="Tell us what you’re looking for..."
+                placeholder="Tell us what you are looking for..."
+                minLength={10}
+                maxLength={3000}
                 required
+                aria-invalid={Boolean(contactErrors.message)}
+                aria-describedby={contactErrors.message ? "contact-message-error" : undefined}
+                onChange={() => clearContactError("message")}
               />
+              {contactErrors.message && <small id="contact-message-error" className="contact-field-error">{contactErrors.message}</small>}
             </label>
-            <button className="button button-primary" type="submit">
-              Send message
+            <button className="button button-primary" type="submit" disabled={contactSubmitting}>
+              {contactSubmitting ? "Sending..." : "Send message"}
             </button>
+            {contactStatus && (
+              <p
+                className={`contact-form-status ${contactStatus.type}`}
+                role={contactStatus.type === "error" ? "alert" : "status"}
+                aria-live={contactStatus.type === "error" ? "assertive" : "polite"}
+              >
+                {contactStatus.message}
+              </p>
+            )}
           </form>
         </main>
         <Footer className="contact-page-footer" onContactClick={openContactPage} />
@@ -555,15 +719,15 @@ function App() {
             {menuOpen ? "\u00D7" : "\u2630"}
           </button>
           <nav className={menuOpen ? "nav-open" : ""}>
-            <a href="#home" onClick={() => setMenuOpen(false)}>Home</a>
-            <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
-            <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
-            <a href="#owners" onClick={() => setMenuOpen(false)}>For Owners</a>
-            <a href="#drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
-            <a href="#faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
-            <a href="/#contact-page" onClick={openContactPage}>Contact</a>
+            <a href="/" onClick={() => setMenuOpen(false)}>Home</a>
+            <a href="/how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
+            <a href="/features" onClick={() => setMenuOpen(false)}>Features</a>
+            <a href="/for-car-wash-owners" onClick={() => setMenuOpen(false)}>For Owners</a>
+            <a href="/for-drivers" onClick={() => setMenuOpen(false)}>For Drivers</a>
+            <a href="/faqs" onClick={() => setMenuOpen(false)}>FAQs</a>
+            <a href="/contact-page" onClick={openContactPage}>Contact</a>
           </nav>
-          <a className="button button-primary header-cta" href="/#contact-page" onClick={openContactPage}>
+          <a className="button button-primary header-cta" href="/contact-page" onClick={openContactPage}>
             Book a Demo <span>↗</span>
           </a>
         </div>
@@ -594,10 +758,10 @@ function App() {
                 place.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#contact">
+                <a className="button button-primary" href="/get-in-touch">
                   Book a Demo <span>↗</span>
                 </a>
-                <a className="button button-outline" href="#how-it-works">
+                <a className="button button-outline" href="/how-it-works">
                   Explore How It Works <span>↗</span>
                 </a>
               </div>
@@ -923,10 +1087,10 @@ function App() {
                 way to operate.
               </p>
               <div className="contact-actions">
-                <a className="button button-white" href="/#contact-page" onClick={openContactPage}>
+                <a className="button button-white" href="/contact-page" onClick={openContactPage}>
                   Book a Demo <span>↗</span>
                 </a>
-                <a className="button button-translucent" href="/#contact-page" onClick={openContactPage}>
+                <a className="button button-translucent" href="/contact-page" onClick={openContactPage}>
                   Contact Us <span>↗</span>
                 </a>
               </div>

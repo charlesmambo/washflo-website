@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Leave API requests for the configured backend.
+  RewriteRule ^api/ - [L]
+
+  # Let Vite's single-page app handle client-side routes such as /contact-page.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
