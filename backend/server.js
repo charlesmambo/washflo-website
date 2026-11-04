@@ -22,12 +22,12 @@ const PORT = Number(process.env.PORT || 3001);
 const BODY_LIMIT_BYTES = 16 * 1024;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 5;
-const allowedOrigins = new Set(
-  (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
-);
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "https://washflo.co.za",
+  "https://www.washflo.co.za",
+  ...(process.env.ALLOWED_ORIGINS || "").split(",").map((origin) => origin.trim()),
+].filter(Boolean));
 const recentSubmissions = new Map();
 
 function sendJson(response, statusCode, payload) {
