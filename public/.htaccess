@@ -1,11 +1,16 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteBase /
+
+  # Prevent Apache content negotiation from intercepting client-side routes.
+  Options -MultiViews
 
   # Leave API requests for the configured backend.
   RewriteRule ^api/ - [L]
 
-  # Let Vite's single-page app handle client-side routes such as /contact-page.
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
+  # Serve real files and folders normally, and send app routes to Vite's entry point.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
   RewriteRule ^ index.html [L]
 </IfModule>
